@@ -6,6 +6,11 @@ export default class DefaultAdapter {
   async save(model, Model) {
     return Promise.resolve(model.save()).then(() => model);
   }
+
+  async saveMany(models, Model) {
+    throw Error('Not implemented!');
+  }
+
   async destroy(model, Model) {
     return Promise.resolve(model.destroy()).then(() => model);
   }

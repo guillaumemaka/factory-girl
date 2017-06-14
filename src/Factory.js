@@ -112,13 +112,27 @@ export default class Factory {
     const models = await this.buildMany(
       adapter, num, attrsArray, buildOptionsArray
     );
-    const savedModels = models.map(model => adapter.save(model, this.Model));
-    return Promise.all(savedModels)
-      .then(createdModels => (this.options.afterCreate ?
+
+    try {
+      const createdModels = adapter.saveMany(models, this.Model);
+      if (this.options.afterCreate) {
+        return Promise.then(() => createdModels.map(
+          createdModel =>
+            this.options.afterCreate(createdModel, attrsArray, buildOptionsArray
+        )));
+      }
+
+      return Promise.then(() => createdModels);
+    } catch (error) {
+      const savedModels = models.map(model => adapter.save(model, this.Model));
+
+      return Promise.all(savedModels)
+        .then(createdModels => (this.options.afterCreate ?
           Promise.all(createdModels.map(createdModel => this.options.afterCreate(
             createdModel, attrsArray, buildOptionsArray
           ))) :
           createdModels
-      ));
+        ));
+    }
   }
 }
